@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Products – Prism Rail</title>
+<meta name="description" content="Explore all 34 aluminium glass railing systems and 18 handrail profiles by Prism Rail. ISO 9001:2015 certified manufacturer.">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Products – Prism Rail">
+<meta property="og:description" content="Prism Rail designs and fabricates aluminium glass railing systems for balconies, terraces, staircases and pools – strong where it counts, invisible where it matters.">
+<meta property="og:image" content="og-image.jpg">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Products – Prism Rail">
+<meta name="twitter:description" content="Prism Rail designs and fabricates aluminium glass railing systems. ISO 9001:2015 certified.">
+<meta name="twitter:image" content="og-image.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="products">
+<div id="site-header"></div>
+
+<section class="phead" data-deco="a">
+  <div class="container">
+    <span class="eyebrow">Catalogue</span>
+    <h1>Railing systems &amp; <span class="gold">handrails</span></h1>
+    <p class="lead">Every profile, bracket and handrail in the Prism Rail range. Open any product for specifications, then request a quote.</p>
+  </div>
+</section>
+<section class="section soft" id="products" data-deco="b" style="padding-top:40px">
+  <div class="container">
+    <div class="toolbar">
+      <div class="chips" id="chips"></div>
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search e.g. PR 08, LED, bracket" aria-label="Search products">
+      </label>
+    </div>
+    <p id="count" class="pd-note" style="margin-bottom:18px"></p>
+    <div class="pgrid" id="grid"></div>
+    <div class="empty" id="empty" hidden><h3>No products found</h3><p>Try a different search or category.</p></div>
+    <div class="more-wrap"><button class="btn btn-ghost btn-lg" id="more" hidden>Show more products</button></div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/visual.js"></script>
+<script src="js/main.js"></script>
+<script>
+(async function () {
+  const [cats, all] = await Promise.all([API.getCategories(), API.getProducts()]);
+  const params = new URLSearchParams(location.search);
+  const PAGE_SIZE = 16;
+  let cat = all.some(p => p.category === params.get("cat")) ? params.get("cat") : "all", q = "", shown = PAGE_SIZE;
+  const chips = document.getElementById("chips"), grid = document.getElementById("grid"),
+        empty = document.getElementById("empty"), count = document.getElementById("count"), more = document.getElementById("more");
+  function drawChips() {
+    const mk = (id, name, n) => `<button class="chipbtn ${cat === id ? "on" : ""}" data-c="${id}">${name}<small>${n}</small></button>`;
+    chips.innerHTML = mk("all", "All", all.length) + cats.map(c => mk(c.id, c.name, all.filter(p => p.category === c.id).length)).join("");
+    chips.querySelectorAll("button").forEach(b => b.onclick = () => {
+      cat = b.dataset.c; shown = PAGE_SIZE; drawChips(); draw();
+      history.replaceState(null, "", cat === "all" ? "products.html" : "?cat=" + cat);
+    });
+  }
+  function draw() {
+    const term = q.trim().toLowerCase();
+    const list = all.filter(p => (cat === "all" || p.category === cat) &&
+      (!term || (p.code + " " + p.tagline + " " + p.categoryName).toLowerCase().includes(term)));
+    grid.innerHTML = list.slice(0, shown).map(productCard).join("");
+    empty.hidden = list.length > 0;
+    more.hidden = list.length <= shown;
+    more.textContent = "Show all " + list.length + " products";
+    count.textContent = "Showing " + Math.min(shown, list.length) + " of " + list.length + (list.length === 1 ? " product" : " products");
+    initReveal();
+  }
+  more.onclick = () => { shown = 1e6; draw(); };
+  document.getElementById("q").addEventListener("input", e => { q = e.target.value; shown = PAGE_SIZE; draw(); });
+  drawChips(); draw();
+})();
+</script>
+</body>
+</html>

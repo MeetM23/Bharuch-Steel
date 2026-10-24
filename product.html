@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Product – Prism Rail</title>
+<meta name="description" content="Detailed engineering specifications, dimensions and CAD cross-section renders for Prism Rail architectural glass railing systems.">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Product Specification – Prism Rail">
+<meta property="og:description" content="Engineering specifications and CAD 3D cross-section renders for Prism Rail aluminium systems.">
+<meta property="og:image" content="og-image.jpg">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Product Specification – Prism Rail">
+<meta name="twitter:description" content="Engineering specifications and CAD 3D cross-section renders for Prism Rail aluminium systems.">
+<meta name="twitter:image" content="og-image.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="product">
+<div id="site-header"></div>
+
+<main class="container" id="root"><div class="empty">Loading…</div></main>
+
+<section class="section soft" id="relatedWrap" hidden style="margin-top:80px">
+  <div class="container">
+    <div class="section-head"><span class="eyebrow">Related</span><h2>You may also like</h2></div>
+    <div class="pgrid" id="related"></div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/visual.js"></script>
+<script src="js/main.js"></script>
+<script>
+/* Fully data-driven: everything below is rendered from one product record,
+   so whatever the admin panel stores will appear here automatically. */
+(async function () {
+  const id = new URLSearchParams(location.search).get("id");
+  const root = document.getElementById("root");
+  const p = id && await API.getProduct(id);
+  if (!p) {
+    root.innerHTML = `<div class="empty"><h2>Product not found</h2><p style="margin:12px 0 24px">It may have been moved or removed.</p><a class="btn btn-primary" href="products.html">Back to products</a></div>`;
+    return;
+  }
+  document.title = p.code + " – " + p.categoryName + " | Prism Rail";
+  const s = p.spec;
+  const rows = [
+    ["Mounting", s.mounting],
+    ["Glass thickness", s.glassThickness && s.glassThickness !== "0 mm" ? s.glassThickness : ""],
+    ["Railing height", s.railHeight && s.railHeight !== "0 mm" ? s.railHeight : ""],
+    ["Base width", s.baseWidth ? s.baseWidth + " mm" : ""],
+    ["Overall profile height", s.overallHeight ? s.overallHeight + " mm" : ""],
+    ["Glass seating depth", s.glassDepth ? s.glassDepth + " mm" : ""],
+    ["Profile length", s.length],
+    ["Fixing", s.fixing],
+    ["Glass lock", s.locking],
+    ["Finishes", (p.finishes || []).join(", ")]
+  ].filter(r => r[1]);
+
+  root.innerHTML = `
+    <nav class="crumbs"><a href="index.html">Home</a>/<a href="products.html">Products</a>/<a href="products.html?cat=${p.category}">${p.categoryName}</a>/<span>${p.code}</span></nav>
+    <div class="pd">
+      <div class="pd-gallery">
+        <div class="pd-visual">
+          <div class="view on" data-v="3d">${productVisual(p)}</div>
+          <div class="view" data-v="section">${productVisual(p, { view: "section" })}</div>
+        </div>
+        <div class="pd-tabs">
+          <button class="pd-tab on" data-v="3d">${p.image ? "Photo" : "3D view"}</button>
+          <button class="pd-tab" data-v="section">Cross-section</button>
+        </div>
+      </div>
+      <div class="pd-info">
+        <span class="tag">${p.categoryName}</span>
+        <h1>${p.code}</h1>
+        <p class="lead">${p.description}</p>
+        <div class="pd-cta">
+          <a class="btn btn-primary btn-lg" href="contact.html?product=${p.id}">Get a Quote</a>
+          <a class="btn btn-ghost btn-lg" href="products.html?cat=${p.category}">More ${p.categoryName.toLowerCase()}</a>
+        </div>
+        <p class="pd-note">Pricing depends on length, glass and finish – every project is quoted individually.</p>
+
+        ${p.features && p.features.length ? `<div class="block"><h3>Highlights</h3><ul class="ticks">${p.features.map(f => `<li>${f}</li>`).join("")}</ul></div>` : ""}
+
+        <div class="block"><h3>Specifications</h3><dl class="spec">${rows.map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("")}</dl></div>
+
+        ${p.accessories && p.accessories.length ? `<div class="block"><h3>Components &amp; accessories</h3><div class="pills">${p.accessories.map(a => `<span class="pill">${a}</span>`).join("")}</div></div>` : ""}
+        ${p.applications && p.applications.length ? `<div class="block"><h3>Ideal for</h3><div class="pills">${p.applications.map(a => `<span class="pill">${a}</span>`).join("")}</div></div>` : ""}
+      </div>
+    </div>`;
+
+  document.querySelectorAll(".pd-tab").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".pd-tab").forEach(x => x.classList.toggle("on", x === b));
+    document.querySelectorAll(".pd-visual .view").forEach(v => v.classList.toggle("on", v.dataset.v === b.dataset.v));
+  }));
+
+  const all = await API.getProducts();
+  const rel = all.filter(x => x.category === p.category && x.id !== p.id).slice(0, 4);
+  if (rel.length) {
+    document.getElementById("related").innerHTML = rel.map(productCard).join("");
+    document.getElementById("relatedWrap").hidden = false;
+    initReveal();
+  }
+})();
+</script>
+</body>
+</html>

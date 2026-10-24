@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contact & Get a Quote – Prism Rail</title>
+<meta name="description" content="Request a direct factory quotation for aluminium glass railing profiles and handrails from Prism Rail. Manufactured in Rajkot, India.">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Contact & Get a Quote – Prism Rail">
+<meta property="og:description" content="Prism Rail designs and fabricates aluminium glass railing systems for balconies, terraces, staircases and pools – strong where it counts, invisible where it matters.">
+<meta property="og:image" content="og-image.jpg">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Contact & Get a Quote – Prism Rail">
+<meta name="twitter:description" content="Prism Rail designs and fabricates aluminium glass railing systems. ISO 9001:2015 certified.">
+<meta name="twitter:image" content="og-image.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="contact">
+<div id="site-header"></div>
+
+<!-- CONTACT / QUOTE -->
+<section class="section contact" id="contact" data-deco="dark" style="padding-top:clamp(56px,7vw,96px)">
+  <div class="container qwrap">
+    <div class="q-copy reveal">
+      <span class="eyebrow light">Get a quote</span>
+      <h2>Tell us about your <span class="gold">project</span>.</h2>
+      <p class="lead">Share a few details and our team will send a tailored quotation – usually within one working day.</p>
+      <ul class="ticks light">
+        <li>We review your requirement</li>
+        <li>An engineer confirms the best system</li>
+        <li>You receive a detailed quotation</li>
+      </ul>
+      <div class="q-info">
+        <a id="tel"></a>
+        <a id="wa" target="_blank" rel="noopener">Chat on WhatsApp →</a>
+        <a id="mail"></a>
+        <p id="addr"></p>
+      </div>
+    </div>
+    <div class="card reveal">
+      <div id="picked"></div>
+      <form class="form" id="form" novalidate>
+        <div><label for="name">Full name *</label><input id="name" name="name" required autocomplete="name"></div>
+        <div><label for="phone">Phone / WhatsApp *</label><input id="phone" name="phone" type="tel" required autocomplete="tel"></div>
+        <div><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email"></div>
+        <div><label for="city">City / Site location</label><input id="city" name="city"></div>
+        <div class="full"><label for="product">Product of interest</label><select id="product" name="product"><option value="">Not sure yet – advise me</option></select></div>
+        <div><label for="length">Approx. running length (ft)</label><input id="length" name="length" type="number" min="0" step="any"></div>
+        <div><label for="finish">Finish</label>
+          <select id="finish" name="finish"><option value="">Select finish</option><option>Anodised</option><option>Wooden finish</option><option>Powder coating</option></select></div>
+        <div class="full"><label for="message">Project details</label><textarea id="message" name="message" placeholder="Location of railing, glass thickness, height, any special requirements…"></textarea></div>
+        <div class="full"><button class="btn btn-primary btn-lg btn-block" type="submit">Request quote</button></div>
+      </form>
+      <div class="success" id="success">
+        <div class="ok"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
+        <h2 style="font-size:1.8rem">Thank you!</h2>
+        <p class="lead" style="margin:12px auto 24px">We've received your request and will get back to you shortly.</p>
+        <a class="btn btn-ghost" href="products.html">Continue browsing</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/visual.js"></script>
+<script src="js/main.js"></script>
+<script>
+(async function () {
+  const [cats, all] = await Promise.all([API.getCategories(), API.getProducts()]);
+  const params = new URLSearchParams(location.search);
+  /* ---------- quote form ---------- */
+  const c = PRISM.company;
+  document.getElementById("addr").textContent = c.address;
+  const t = document.getElementById("tel"); t.href = "tel:+" + c.phoneRaw; t.textContent = c.phone;
+  document.getElementById("wa").href = "https://wa.me/" + c.phoneRaw + "?text=" + encodeURIComponent("Hi Prism Rail, I'd like a quote for glass railing.");
+  const m = document.getElementById("mail"); m.href = "mailto:" + c.email; m.textContent = c.email;
+
+  const sel = document.getElementById("product"), picked = document.getElementById("picked");
+  sel.insertAdjacentHTML("beforeend", cats.map(k =>
+    `<optgroup label="${k.name}">${all.filter(p => p.category === k.id).map(p => `<option value="${p.id}">${p.code}</option>`).join("")}</optgroup>`).join(""));
+  function showPicked() {
+    const p = all.find(x => x.id === sel.value);
+    picked.innerHTML = p ? `<div class="selected-prod"><div class="sp-img">${productVisual(p, { thumb: true, dims: false, pad: 4 })}</div><div>Quote for <b>${p.code}</b><br><small>${p.categoryName}</small></div></div>` : "";
+  }
+  const pre = params.get("product");
+  if (pre && all.some(p => p.id === pre)) sel.value = pre;
+  sel.addEventListener("change", showPicked); showPicked();
+
+  document.getElementById("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const f = e.target;
+    if (!f.name.value.trim() || !f.phone.value.trim()) { (f.name.value.trim() ? f.phone : f.name).focus(); return; }
+    await API.submitQuote(Object.fromEntries(new FormData(f).entries()));
+    f.style.display = "none"; picked.style.display = "none";
+    document.getElementById("success").style.display = "block";
+  });
+})();
+</script>
+</body>
+</html>
